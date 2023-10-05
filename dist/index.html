@@ -13,6 +13,11 @@
         logMsg(prompt, 'user');
         logMsg('<i>LLM is generating the response, please wait...</i>');
 
+        window.scroll({
+            top: 1e8,
+            behavior: 'smooth'
+        });
+
         userInputEl.setAttribute('disabled', 'disabled');
         const res = await fetch('/chat', { method: 'post', 'Content-Type': 'application/json', body: JSON.stringify({ prompt }) });
 
@@ -74,7 +79,7 @@
         border-bottom-right-radius: 0;
         padding: .5em;
     }
-    
+
     form {
         position: absolute;
         left: 0;

@@ -1,0 +1,117 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
+<script>
+    async function submitPrompt(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const userInputEl = document.getElementById('user');
+        const prompt = userInputEl.value;
+
+
+        logMsg(prompt, 'user');
+        logMsg('<i>LLM is generating the response, please wait...</i>');
+
+        userInputEl.setAttribute('disabled', 'disabled');
+        const res = await fetch('/chat', { method: 'post', 'Content-Type': 'application/json', body: JSON.stringify({ prompt }) });
+
+        const { response } = await res.json();
+        userInputEl.value = '';
+        userInputEl.removeAttribute('disabled');
+        deleteLastMsg();
+        logMsg(response);
+    }
+
+    function logMsg(msg, from = 'system') {
+        document.getElementById('log').innerHTML += `<div class="${from}"><span>${msg}</span></div>`;
+    }
+
+    function deleteLastMsg() {
+        const logEl = document.getElementById('log');
+        logEl.removeChild(logEl.lastChild);
+    }
+</script>
+<style>
+    body {
+        font-family: sans-serif;
+    }
+
+    #log {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 60px;
+        padding: 1em;
+        overflow: auto;
+    }
+
+
+    #log span {
+        white-space: pre-wrap;
+    }
+
+    #log div {
+        margin-bottom: 1em;
+    }
+
+    #log .system {
+        float: left;
+        clear: both;
+        background-color: #cc88ee;
+        border-radius: 1em;
+        padding: .5em;
+        border-bottom-left-radius: 0;
+    }
+
+    #log .user {
+        float: right;
+        clear: both;
+        background-color: #88ccee;
+        font-weight: bold;
+        border-radius: 1em;
+        border-bottom-right-radius: 0;
+        padding: .5em;
+    }
+    
+    form {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 60px;
+        bottom: 0;
+        margin: 0;
+    }
+
+    form #user {
+        position: absolute;
+        left: 0;
+        right: 48px;
+        height: 100%;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        display: block;
+    }
+
+    form input[type=submit] {
+        position: absolute;
+        width: 48px;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        background-color: #88ccee;
+    }
+</style>
+
+<body>
+    <div id="log">
+    </div>
+    <form onsubmit='submitPrompt(event)'>
+        <input type="text" id='user'>
+        <input type='submit' value='Send'>
+    </form>
+</body>
+
+</html>

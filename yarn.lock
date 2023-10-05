@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@cloudflare/ai@^1.0.15":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@cloudflare/ai/-/ai-1.0.15.tgz#b79711b1127e163f888183a0359a5da8e92febc0"
+  integrity sha512-Ygl1HdMAMtbxtpUG7j+9LjGCgrluVCKcUPArLmkdgitSRTwaX8sBxdM8QaTqJfWgunL7aYNIPHr12gJ5f4SAzw==
+
 "@cloudflare/kv-asset-handler@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@cloudflare/kv-asset-handler/-/kv-asset-handler-0.2.0.tgz#c9959bbd7a1c40bd7c674adae98aa8c8d0e5ca68"
@@ -323,6 +328,11 @@ glob-to-regexp@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz#c75297087c851b9a578bd217dd59a92f59fe546e"
   integrity sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==
+
+hono@^3.7.4:
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-3.7.4.tgz#d209e39ba3da14c46f7a2473b82c897cbf3f96f1"
+  integrity sha512-Ep7SQMgw5Tf49fKBami4q940pvZW1E/524IU6Qt2tdFsjeWpXbKBTsJbj2zOsdcQ3sJxhJ+gGsXoLiichLE8mw==
 
 is-binary-path@~2.1.0:
   version "2.1.0"

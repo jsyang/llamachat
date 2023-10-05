@@ -13,11 +13,6 @@
         logMsg(prompt, 'user');
         logMsg('<i>LLM is generating the response, please wait...</i>');
 
-        window.scroll({
-            top: 1e8,
-            behavior: 'smooth'
-        });
-
         userInputEl.setAttribute('disabled', 'disabled');
         const res = await fetch('/chat', { method: 'post', 'Content-Type': 'application/json', body: JSON.stringify({ prompt }) });
 
@@ -26,10 +21,18 @@
         userInputEl.removeAttribute('disabled');
         deleteLastMsg();
         logMsg(response);
+
+        userInputEl.focus();
     }
 
     function logMsg(msg, from = 'system') {
-        document.getElementById('log').innerHTML += `<div class="${from}"><span>${msg}</span></div>`;
+        const logEl = document.getElementById('log');
+        logEl.innerHTML += `<div class="${from}"><span>${msg}</span></div>`;
+
+        logEl.scroll({
+            top: 1e8,
+            behavior: 'smooth'
+        });
     }
 
     function deleteLastMsg() {
@@ -96,7 +99,7 @@
         height: 100%;
         top: 0;
         bottom: 0;
-        width: 100%;
+        width: calc(100% - 48px);
         display: block;
     }
 

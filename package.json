@@ -1,0 +1,8 @@
+{
+  "name": "llamachat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:jsyang/llamachat.git",
+  "author": "jsyang <jsyang.ca@gmail.com>",
+  "license": "MIT"
+}

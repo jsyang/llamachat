@@ -28,8 +28,15 @@ app.post('/chat', async (c) => {
 	// The model still has a max input token length of 768 regardless of where the input comes from!
 	const { messages } = await c.req.json();
 
-	const allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-	const inputTokenCount = tokenizer.encode(allText).bpe.length;
+	let allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+	let inputTokenCount = tokenizer.encode(allText).bpe.length * 3;
+
+	// Drop messages if over input limit
+	while(inputTokenCount >= 768) {
+		messages.shift();
+		allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+		inputTokenCount = tokenizer.encode(allText).bpe.length * 3;
+	}
 
 	const ai = new Ai(c.env.AI);
 

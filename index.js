@@ -18,7 +18,7 @@ app.use('*', async (c, next) => {
 	return authMiddleware(c, next);
 });
 
-app.get('/', serveStatic({ root: './' }));
+app.get('/*', serveStatic({ root: './' }));
 
 app.post('/chat', async (c) => {
 	const { messages } = await c.req.json();

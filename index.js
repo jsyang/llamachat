@@ -22,14 +22,9 @@ app.use('*', async (c, next) => {
 app.get('/', serveStatic({ root: './' }));
 
 app.post('/chat', async (c) => {
-	const {prompt} = await c.req.json();
+	const { msgs: messages } = await c.req.json();
 
 	const ai = new Ai(c.env.AI);
-
-	const messages = [
-		{ role: 'system', content: 'You are a friendly assistant' },
-		{ role: 'user', content: prompt }
-	];
 
 	const answer = await ai.run(
 		'@cf/meta/llama-2-7b-chat-int8',

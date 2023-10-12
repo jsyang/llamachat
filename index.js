@@ -32,6 +32,8 @@ app.post('/chat', async (c) => {
 		{ messages }
 	);
 
+	console.log(answer);
+
 	return c.json(answer);
 });
 

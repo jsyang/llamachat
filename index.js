@@ -18,11 +18,10 @@ app.use('*', async (c, next) => {
 	return authMiddleware(c, next);
 });
 
-
 app.get('/', serveStatic({ root: './' }));
 
 app.post('/chat', async (c) => {
-	const { msgs: messages } = await c.req.json();
+	const { messages } = await c.req.json();
 
 	const ai = new Ai(c.env.AI);
 

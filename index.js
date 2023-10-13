@@ -20,38 +20,44 @@ app.use('*', async (c, next) => {
 
 app.get('/*', serveStatic({ root: './' }));
 
-import { getTokensForString, formatMessage } from './helpers.js';
+import { getTokensForString, formatMessage, truncateMessages } from './helpers.js';
 
 app.post('/chat', async (c) => {
 	// The entire conversation is stored and sent via client rather than relying on a vector DB
 	// The model still has a max input token length of 768 regardless of where the input comes from!
-	const { messages } = await c.req.json();
+	const ai = new Ai(c.env.AI);
+	let { messages } = await c.req.json();
+
 	console.log('Msg length', messages.length);
 
 	let allText = messages.map(formatMessage).join('\n');
 	let inputTokenCount = getTokensForString(allText);
 
 	console.log('initial itc', inputTokenCount);
-	
+
 	// Drop messages if over input limit
 	while (inputTokenCount >= 768) {
-		console.log('Crunching messages... ', messages.length);
-		messages.shift();
-		allText = messages.map(formatMessage).join('\n');
-		inputTokenCount = getTokensForString(allText);
-		console.log('itc', inputTokenCount);
+		const { tokenCount } = truncateMessages(messages);
+		inputTokenCount = tokenCount;
 	}
-	
-	console.log('final itc', inputTokenCount);
 
-	const ai = new Ai(c.env.AI);
+	console.log('final itc', inputTokenCount);
 
 	console.log('Msg length', messages.length);
 
-	const answer = await ai.run(
+	let answer = await ai.run(
 		'@cf/meta/llama-2-7b-chat-int8',
 		{ messages }
 	);
+
+	// Drop messages if LLM response is empty
+	while (answer.response.length === 0) {
+		truncateMessages(messages);
+		answer = await ai.run(
+			'@cf/meta/llama-2-7b-chat-int8',
+			{ messages }
+		);
+	}
 
 	return c.json(answer);
 });

@@ -28,22 +28,14 @@ app.post('/chat', async (c) => {
 	const ai = new Ai(c.env.AI);
 	let { messages } = await c.req.json();
 
-	console.log('Msg length', messages.length);
-
 	let allText = messages.map(formatMessage).join('\n');
 	let inputTokenCount = getTokensForString(allText);
-
-	console.log('initial itc', inputTokenCount);
 
 	// Drop messages if over input limit
 	while (inputTokenCount >= 768) {
 		const { tokenCount } = truncateMessages(messages);
 		inputTokenCount = tokenCount;
 	}
-
-	console.log('final itc', inputTokenCount);
-
-	console.log('Msg length', messages.length);
 
 	let answer = await ai.run(
 		'@cf/meta/llama-2-7b-chat-int8',

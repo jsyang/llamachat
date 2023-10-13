@@ -43,7 +43,6 @@ app.post('/chat', async (c) => {
 		'@cf/meta/llama-2-7b-chat-int8',
 		{ messages }
 	);
-	console.log('Input token count: ' + inputTokenCount);
 
 	return c.json(answer);
 });

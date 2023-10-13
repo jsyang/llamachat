@@ -1,5 +1,5 @@
 export function getTokensForString(str) {
-    return str.length * 3.5;
+    return str.length * 2.5;
 }
 
 const ROLE_ALIAS = {

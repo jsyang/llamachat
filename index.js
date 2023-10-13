@@ -2,11 +2,8 @@ import { Ai } from '@cloudflare/ai';
 import { Hono } from 'hono';
 import { basicAuth } from 'hono/basic-auth';
 import { serveStatic } from 'hono/cloudflare-workers';
-import GPT3Tokenizer from 'gpt3-tokenizer';
-
 
 const app = new Hono();
-const tokenizer = new GPT3Tokenizer({ type: 'gpt3' });
 
 let authMiddleware = null;
 
@@ -23,19 +20,21 @@ app.use('*', async (c, next) => {
 
 app.get('/*', serveStatic({ root: './' }));
 
+import {getTokensForString} from './helpers.js';
+
 app.post('/chat', async (c) => {
 	// The entire conversation is stored and sent via client rather than relying on a vector DB
 	// The model still has a max input token length of 768 regardless of where the input comes from!
 	const { messages } = await c.req.json();
 
 	let allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-	let inputTokenCount = tokenizer.encode(allText).bpe.length * 3;
+	let inputTokenCount = getTokensForString(allText);
 
 	// Drop messages if over input limit
 	while(inputTokenCount >= 768) {
 		messages.shift();
 		allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-		inputTokenCount = tokenizer.encode(allText).bpe.length * 3;
+		inputTokenCount = getTokensForSting(allText);
 	}
 
 	const ai = new Ai(c.env.AI);

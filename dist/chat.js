@@ -1,5 +1,22 @@
 const messages = [];
 
+function splitLargeMessages() {
+    let outgoingMessages = [];
+    for(let m in messages) {
+        const splitContent = m.content.split('\n').filter(Boolean).map(
+            content => ({role: m.role, content})
+        );
+
+        outgoingMessages = [
+            ...outgoingMessages,
+            ...splitContent
+        ];
+    }
+
+    return outgoingMessages;
+}
+
+
 async function submitPrompt(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -10,7 +27,14 @@ async function submitPrompt(e) {
     logMsg('<i>LLM is generating the response, please wait...</i>');
 
     userInputEl.setAttribute('disabled', 'disabled');
-    const res = await fetch('/chat', { method: 'post', 'Content-Type': 'application/json', body: JSON.stringify({ messages }) });
+    const res = await fetch(
+        '/chat', 
+        { 
+            method: 'post', 
+            'Content-Type': 'application/json', 
+            body: JSON.stringify({ messages: splitLargeMessages() }) 
+        }
+    );
 
     const { response } = await res.json();
     userInputEl.value = '';

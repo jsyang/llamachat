@@ -2,7 +2,7 @@ const messages = [];
 
 function splitLargeMessages() {
     let outgoingMessages = [];
-    for(let m in messages) {
+    for(const m of messages) {
         const splitContent = m.content.split('\n').filter(Boolean).map(
             content => ({role: m.role, content})
         );

@@ -34,7 +34,7 @@ app.post('/chat', async (c) => {
 	while(inputTokenCount >= 768) {
 		messages.shift();
 		allText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-		inputTokenCount = getTokensForSting(allText);
+		inputTokenCount = getTokensForString(allText);
 	}
 
 	const ai = new Ai(c.env.AI);

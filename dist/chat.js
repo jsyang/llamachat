@@ -16,7 +16,6 @@ function splitLargeMessages() {
     return outgoingMessages;
 }
 
-
 async function submitPrompt(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -28,7 +27,7 @@ async function submitPrompt(e) {
 
     userInputEl.setAttribute('disabled', 'disabled');
     const res = await fetch(
-        '/chat', 
+        document.body.getAttribute('data-chat-url') || '/chat', 
         { 
             method: 'post', 
             'Content-Type': 'application/json', 

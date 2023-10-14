@@ -7,3 +7,12 @@ binding = "AI"
 
 [site]
 bucket = "./dist"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX" # available within your Worker on env.VECTORIZE_INDEX
+index_name = "vector-index"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "database"
+database_id = "df7722f2-4454-40b9-b5a9-e30105185b66"

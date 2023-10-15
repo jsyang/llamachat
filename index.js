@@ -51,6 +51,8 @@ app.post('/chat', async (c) => {
 			{ messages }
 		);
 	}
+	
+	c.header('Cache-Control', 'no-cache');
 
 	return c.json(answer);
 });

@@ -34,7 +34,7 @@ function getShannonEntropy(buf, start = 0, end) {
 
 const WEIGHTS_ROLE = {
     user: 1,
-    system: 4,  // Prefer to lose system messages over user ones
+    system: 2,  // Prefer to lose system messages over user ones
 };
 
 const getPruneWeight = m => WEIGHTS_ROLE[m.role] / getShannonEntropy(m.content);
@@ -42,7 +42,7 @@ const sortByPruneWeightAscending = (a, b) => getPruneWeight(a) - getPruneWeight(
 
 
 // Select this many elements before and after the truncation position to be candidates for the next truncation
-const pruneRadius = 4;
+const pruneRadius = 2;
 
 // Drop messages to fit inside the context window
 // Use a truncation location strategy and an entropy measure to figure out what to drop
@@ -56,7 +56,7 @@ export function truncateMessages(messages, chopStrategy = 'middle') {
             ].sort(sortByPruneWeightAscending).pop();
 
             const dropped = messages.splice(messages.findIndex(m => m === candidate), 1)[0];
-            console.log('[truncated]', JSON.stringify(dropped));
+            // console.log('[truncated]', JSON.stringify(dropped));
 
             break;
         case 'end':

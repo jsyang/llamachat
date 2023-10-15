@@ -8,7 +8,7 @@ export function formatMessage(msg) {
 
 // Returns a number between 1 - 9
 function getShannonEntropy(buf, start = 0, end) {
-    const H = 0;
+    let H = 0;
     end = end || buf.length;
     const onebycount = 1 / (end - start);
     const keys = [];
@@ -55,7 +55,9 @@ export function truncateMessages(messages, chopStrategy = 'middle') {
                 ...messages.slice(index, index + pruneRadius),
             ].sort(sortByPruneWeightAscending).pop();
 
-            messages.splice(messages.findIndex(m => m === candidate), 1);
+            const dropped = messages.splice(messages.findIndex(m => m === candidate), 1)[0];
+            console.log('[truncated]', JSON.stringify(dropped));
+
             break;
         case 'end':
             messages.pop();

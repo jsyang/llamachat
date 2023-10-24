@@ -9,7 +9,7 @@ const app = new Hono();
 
 let authMiddleware = null;
 
-app.use('*', async (c, next) => {
+app.use('/chat/*', async (c, next) => {
 	if (!authMiddleware) {
 		authMiddleware = basicAuth({
 			username: c.env.username,
@@ -23,7 +23,7 @@ app.use('*', async (c, next) => {
 app.get('/*', serveStatic({ root: './' }));
 
 
-app.post('/chat', async (c) => {
+app.post('/chat/basic', async (c) => {
 	// The entire conversation is stored and sent via client rather than relying on a vector DB
 	// The model still has a max input token length of 768 regardless of where the input comes from!
 	const ai = new Ai(c.env.AI);
@@ -51,7 +51,7 @@ app.post('/chat', async (c) => {
 			{ messages }
 		);
 	}
-	
+
 	c.header('Cache-Control', 'no-cache');
 
 	return c.json(answer);
@@ -61,7 +61,7 @@ app.post('/chat', async (c) => {
 
 import { getLongestWallOfTextFromURL } from './loader.js';
 
-app.post('/process-url', async (c) => {
+app.post('/chat/process-url', async (c) => {
 	const url = await c.req.text();
 
 	if (!url) {
@@ -73,7 +73,7 @@ app.post('/process-url', async (c) => {
 	return c.text(text);
 });
 
-app.post('/notes', async c => {
+app.post('/chat/add-note', async c => {
 	const ai = new Ai(c.env.AI)
 
 	const text = chunkString(await c.req.text(), 300);
@@ -112,14 +112,14 @@ app.post('/notes', async c => {
 
 const systemPrompt = { role: 'system', content: `When answering the question or responding, use the context provided, if it is provided and relevant.` };
 
-app.post('/notes-chat', async (c) => {
+app.post('/chat/notes', async (c) => {
 	const ai = new Ai(c.env.AI);
 	const { messages } = await c.req.json();
 
 	const question = messages[messages.length - 1].content;
 
 	console.log(question);
-	
+
 	const embeddings = await ai.run('@cf/baai/bge-base-en-v1.5', { text: question });
 	const vectors = embeddings.data[0];
 
@@ -144,7 +144,7 @@ app.post('/notes-chat', async (c) => {
 		? `Context:\n${notes.map(note => `- ${note}`).join("\n")}`
 		: "";
 
-		console.log(notes);
+	console.log(notes);
 
 	// The entire conversation is stored and sent via client rather than relying on a vector DB
 	// The model still has a max input token length of 768 regardless of where the input comes from!
@@ -184,6 +184,39 @@ app.post('/notes-chat', async (c) => {
 	}
 
 	return c.json(answer);
+});
+
+
+// For use with Google Sheets
+
+// 1. Extensions > Apps Script
+// 2. Create a new function to accept the event param
+// 3. Set up an "edit" trigger so that this function fires every time a cell value is edited on the sheet
+// 4. Use the docs to build a call to post the cell changed and then set the east-neighboring cell to the prompt answer
+// Apps Script reference
+// - https://developers.google.com/apps-script/guides/triggers/events
+// - https://developers.google.com/apps-script/reference/spreadsheet/range#methods
+// - https://developers.google.com/apps-script/reference/url-fetch/http-response#getcontenttext
+// 5. You can check the log of your Apps Script to see what went wrong or to see logs from the execution using `Logger.log()`
+
+app.post('/raw/chat', async (c) => {
+	const { prompt, user, pass } = await c.req.json();
+
+	if (user !== c.env.username || pass !== c.env.password) {
+		c.status(403);
+		return c.json({ error: 'Not authed!' });
+	}
+
+	// The entire conversation is stored and sent via client rather than relying on a vector DB
+	// The model still has a max input token length of 768 regardless of where the input comes from!
+	const ai = new Ai(c.env.AI);
+
+	const answer = await ai.run(
+		'@cf/meta/llama-2-7b-chat-int8',
+		{ prompt }
+	);
+
+	return c.text(answer.response);
 });
 
 

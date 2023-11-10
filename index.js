@@ -2,6 +2,7 @@ import { Ai } from '@cloudflare/ai';
 import { Hono } from 'hono';
 import { basicAuth } from 'hono/basic-auth';
 import { serveStatic } from 'hono/cloudflare-workers';
+import { cors } from 'hono/cors';
 
 import { getTokensForString, formatMessage, truncateMessages, chunkString } from './helpers.js';
 
@@ -22,6 +23,7 @@ app.use('/chat/*', async (c, next) => {
 
 app.get('/*', serveStatic({ root: './' }));
 
+app.use('*', cors());
 
 app.post('/chat/basic', async (c) => {
 	// The entire conversation is stored and sent via client rather than relying on a vector DB
@@ -57,6 +59,24 @@ app.post('/chat/basic', async (c) => {
 	return c.json(answer);
 });
 
+app.post('/chat/completion', async (c) => {
+	let { prompt } = await c.req.json();
+
+	const ai = new Ai(c.env.AI);
+
+	prompt = prompt.slice(prompt.length - 768);
+
+	const answer = await ai.run(
+		'@cf/meta/llama-2-7b-chat-int8',
+		{ prompt }
+	);
+
+	c.header('Cache-Control', 'no-cache');
+	
+	return c.json(answer);
+});
+
+///////////////////////////////////////////////////
 // !!!! RAG !!!!
 
 import { getLongestWallOfTextFromURL } from './loader.js';
@@ -240,6 +260,8 @@ app.post('/raw/chat', async (c) => {
 
 	return c.text(answer.response);
 });
+
+// WhatsApp integration
 
 app.post('/chat/wa', async (c) => {
 	let error;

@@ -4,7 +4,7 @@ body {
 
 #log {
     position: absolute;
-    top: 0;
+    top: 2em;
     left: 0;
     right: 0;
     bottom: 60px;
@@ -12,13 +12,40 @@ body {
     overflow: auto;
 }
 
+#save {
+    position: fixed;
+    top: 0;
+    left: 0;
+    font-size: 2.5em;
+    background: transparent;
+    text-shadow: 2px 2px 5px gray;
+    border: 0;
+    z-index: 1;
+}
 
 #log span {
     white-space: pre-wrap;
 }
 
-#log div {
+
+#log>div {
     margin-bottom: 1em;
+}
+
+/* Button container */
+#log>div .more {
+    margin-top: 1em;
+    text-align: right;
+}
+
+body.hide-more .more {
+    display: none;
+}
+
+/* Hide all interaction while prompt is generating. */
+
+body.hide-more form {
+    display: none;
 }
 
 #log .system {

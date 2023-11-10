@@ -97,7 +97,7 @@ function saveConversation() {
 
     const a = document.createElement('a');
     a.setAttribute('download', now.valueOf() + '.md');
-    a.href = "data:text/plain;base64," + btoa(markdownConversation);
+    a.href = "data:text/markdown;base64," + btoa(markdownConversation);
 
     a.click();
 }
@@ -134,7 +134,7 @@ async function continueReply(e) {
 
     document.body.classList.remove('hide-more');
 
-    messages[msgIndex].content += response;
+    messages[msgIndex].content += ' ' + response;
 
-    originatingMsgEl.querySelector('span').innerHTML += response;
+    originatingMsgEl.querySelector('span').innerHTML += ' ' + response;
 }

@@ -43,14 +43,20 @@ function logMsg(content, role = 'system', isImage = false) {
 
     logEl.innerHTML += `<div class="${role ? role : 'system'}">${content}</div>`;
 
+    if (role) {
+        messages.push({ role, content });
+    }
+
+    setTimeout(scrollToBottom, 1000);
+}
+
+function scrollToBottom() {
+    const logEl = document.getElementById('log');
+
     logEl.scroll({
         top: 1e8,
         behavior: 'smooth'
     });
-
-    if (role) {
-        messages.push({ role, content });
-    }
 }
 
 function deleteLastMsg() {

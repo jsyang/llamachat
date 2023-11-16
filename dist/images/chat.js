@@ -65,13 +65,23 @@ function deleteLastMsg() {
     logEl.removeChild(logEl.lastChild);
 }
 
+async function blobToDataUrl(blob) {
+    const e = await new Promise(r => {
+        const a = new FileReader();
+        a.onload = r;
+        a.readAsDataURL(blob);
+    });
+
+    return e.target.result;
+}
+
 function saveConversation() {
     const now = new Date();
-    const markdownConversation = `# Conversation @ ${now.toISOString()}\n\n` + messages.map(m => {
+    const markdownConversation = `# Conversation @ ${now.toISOString()}\n\n` + messages.map(async m => {
         if (m.role === 'user') {
             return '### ' + m.content;
         } else {
-            return m.content;
+            return `![generated image](${await blobToDataUrl(m.content)})`;
         }
     })
         .join('\n\n');

@@ -16,8 +16,6 @@ function splitLargeMessages() {
     return outgoingMessages;
 }
 
-let CHAT_API_URL;
-
 async function submitChatMessage(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -29,17 +27,8 @@ async function submitChatMessage(e) {
 
     userInputEl.setAttribute('disabled', 'disabled');
 
-    if (!CHAT_API_URL) {
-        if (location.hostname === 'localhost') {
-            // Local testing
-            CHAT_API_URL = 'https://app.cohesive.workers.dev/chat/basic';
-        } else {
-            CHAT_API_URL = document.body.getAttribute('data-chat-url') || '/chat/basic';
-        }
-    }
-
     const res = await fetch(
-        CHAT_API_URL,
+        API_URL.BASIC_CHAT,
         {
             method: 'post',
             'Content-Type': 'application/json',
@@ -68,15 +57,22 @@ function logMsg(content, role) {
 
     logEl.innerHTML += `<div class="${role ? role : 'system'}"><span>${content}</span>${moreTextButton}</div>`;
 
+    if (role) {
+        messages.push({ role, content });
+    }
+
+    setTimeout(scrollToBottom, 1000);
+}
+
+function scrollToBottom() {
+    const logEl = document.getElementById('log');
+
     logEl.scroll({
         top: 1e8,
         behavior: 'smooth'
     });
-
-    if (role) {
-        messages.push({ role, content });
-    }
 }
+
 
 function deleteLastMsg() {
     messages.pop();
@@ -102,27 +98,15 @@ function saveConversation() {
     a.click();
 }
 
-let COMPLETION_API_URL;
-
-
 async function continueReply(e) {
     const originatingMsgEl = e.target.closest('.system');
     const msgIndex = Array.from(originatingMsgEl.parentElement.children).indexOf(originatingMsgEl);
     messages[msgIndex];
 
-    if (!COMPLETION_API_URL) {
-        if (location.hostname === 'localhost') {
-            // Local testing
-            COMPLETION_API_URL = 'https://app.cohesive.workers.dev/chat/completion';
-        } else {
-            COMPLETION_API_URL = '/chat/completion';
-        }
-    }
-
     document.body.classList.add('hide-more');
 
     const res = await fetch(
-        COMPLETION_API_URL,
+        API_URL.COMPLETION,
         {
             method: 'post',
             'Content-Type': 'application/json',

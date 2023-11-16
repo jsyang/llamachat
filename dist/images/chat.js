@@ -22,20 +22,21 @@ async function submitChatMessage(e) {
         }
     );
 
-    const imageObjectURL = URL.createObjectURL(await res.blob());
+    const blob = await res.blob();
+    const imageObjectURL = URL.createObjectURL(blob);
 
     userInputEl.value = '';
     userInputEl.removeAttribute('disabled');
     deleteLastMsg();
-    logMsg(imageObjectURL, 'system', true);
+    logMsg(imageObjectURL, 'system', blob);
 
     userInputEl.focus();
 }
 
-function logMsg(content, role = 'system', isImage = false) {
+function logMsg(content, role = 'system', imageBlob) {
     const logEl = document.getElementById('log');
 
-    if (isImage) {
+    if (imageBlob) {
         content = `<img src="${content}">`;
     } else {
         content = `<span>${content}</span>`;
@@ -43,9 +44,7 @@ function logMsg(content, role = 'system', isImage = false) {
 
     logEl.innerHTML += `<div class="${role ? role : 'system'}">${content}</div>`;
 
-    if (role) {
-        messages.push({ role, content });
-    }
+    messages.push({ role, content, imageBlob });
 
     setTimeout(scrollToBottom, 1000);
 }
@@ -75,15 +74,15 @@ async function blobToDataUrl(blob) {
     return e.target.result;
 }
 
-function saveConversation() {
+async function saveConversation() {
     const now = new Date();
-    const markdownConversation = `# Conversation @ ${now.toISOString()}\n\n` + messages.map(async m => {
+    const markdownConversation = `# Conversation @ ${now.toISOString()}\n\n` + (await Promise.all(messages.map(async m => {
         if (m.role === 'user') {
             return '### ' + m.content;
         } else {
-            return `![generated image](${await blobToDataUrl(m.content)})`;
+            return `![generated image](${await blobToDataUrl(m.imageBlob)})`;
         }
-    })
+    })))
         .join('\n\n');
 
     const a = document.createElement('a');

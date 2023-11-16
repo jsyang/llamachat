@@ -41,7 +41,7 @@ app.post('/chat/basic', async (c) => {
 	}
 
 	let answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
+		'@cf/meta/llama-2-7b-chat-fp16',
 		{ messages }
 	);
 
@@ -49,7 +49,7 @@ app.post('/chat/basic', async (c) => {
 	while (answer.response.length === 0) {
 		truncateMessages(messages);
 		answer = await ai.run(
-			'@cf/meta/llama-2-7b-chat-int8',
+			'@cf/meta/llama-2-7b-chat-fp16',
 			{ messages }
 		);
 	}
@@ -67,237 +67,24 @@ app.post('/chat/completion', async (c) => {
 	prompt = prompt.slice(prompt.length - 768);
 
 	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
+		'@cf/meta/llama-2-7b-chat-fp16',
 		{ prompt }
 	);
 
 	c.header('Cache-Control', 'no-cache');
-	
+
 	return c.json(answer);
 });
 
 ///////////////////////////////////////////////////
-// !!!! RAG !!!!
+import addRAGRoutes from './addRAGRoutes.js';
+addRAGRoutes(app);
+///////////////////////////////////////////////////
+import addRAWRoutes from './addRAWRoutes.js';
+addRAWRoutes(app);
+///////////////////////////////////////////////////
+import addWARoutes from './addWARoutes.js';
+addWARoutes(app);
 
-import { getLongestWallOfTextFromURL } from './loader.js';
-
-app.post('/chat/process-url', async (c) => {
-	const url = await c.req.text();
-
-	if (!url) {
-		return c.text("Missing url", 400);
-	}
-
-	const text = (await getLongestWallOfTextFromURL(url));
-
-	return c.text(text);
-});
-
-app.post('/chat/add-note', async c => {
-	const ai = new Ai(c.env.AI)
-
-	const text = chunkString(await c.req.text(), 300);
-
-	const d1Results = await Promise.all(
-		text.map(blurb => c.env.DB.prepare("INSERT INTO notes (text) VALUES (?) RETURNING *")
-			.bind(blurb)
-			.run()
-			.then(op => op.results[0].id)
-		)
-	);
-
-	const embeddingResults = await Promise.all(
-		text.map(blurb => ai.run('@cf/baai/bge-base-en-v1.5', { text: [blurb] })
-			.then(results => results.data[0])
-		)
-	);
-
-	const vectorDBUpserts = [];
-
-	for (let i = 0; i < d1Results.length; i++) {
-		if (embeddingResults[i] && d1Results[i]) {
-			vectorDBUpserts.push(
-				{
-					id: d1Results[i],
-					values: embeddingResults[i],
-				}
-			);
-		}
-	}
-
-	const inserted = await c.env.VECTORIZE_INDEX.upsert(vectorDBUpserts);
-
-	return c.json({ inserted });
-});
-
-const systemPrompt = { role: 'system', content: `When answering the question or responding, use the context provided, if it is provided and relevant.` };
-
-app.post('/chat/notes', async (c) => {
-	const ai = new Ai(c.env.AI);
-	const { messages } = await c.req.json();
-
-	const question = messages[messages.length - 1].content;
-
-	console.log(question);
-
-	const embeddings = await ai.run('@cf/baai/bge-base-en-v1.5', { text: question });
-	const vectors = embeddings.data[0];
-
-	console.log(vectors);
-
-	const SIMILARITY_CUTOFF = 0.5;
-	const vectorQuery = await c.env.VECTORIZE_INDEX.query(vectors, { topK: 2 });
-	const vecIds = vectorQuery.matches
-		.filter(vec => vec.score > SIMILARITY_CUTOFF)
-		.map(vec => vec.vectorId);
-
-	console.log(vecIds);
-
-	let notes = [];
-	if (vecIds.length) {
-		const query = `SELECT * FROM notes WHERE id IN (${vecIds.join(", ")})`;
-		const { results } = await c.env.DB.prepare(query).bind().all();
-		if (results) notes = results.map(vec => vec.text);
-	}
-
-	const contextMessage = notes.length
-		? `Context:\n${notes.map(note => `- ${note}`).join("\n")}`
-		: "";
-
-	console.log(notes);
-
-	// The entire conversation is stored and sent via client rather than relying on a vector DB
-	// The model still has a max input token length of 768 regardless of where the input comes from!
-
-	let allText = messages.map(formatMessage).join('\n');
-	let inputTokenCount = getTokensForString(allText);
-
-	// Drop messages if over input limit
-	while (inputTokenCount >= 768) {
-		const { tokenCount } = truncateMessages(messages);
-		inputTokenCount = tokenCount;
-	}
-
-	let answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
-		{
-			messages: [
-				...(notes.length ? [{ role: 'system', content: contextMessage }] : []),
-				systemPrompt,
-				...messages,
-			]
-		}
-	);
-
-	// Drop messages if LLM response is empty
-	while (answer.response.length === 0) {
-		truncateMessages(messages);
-		answer = await ai.run(
-			'@cf/meta/llama-2-7b-chat-int8',
-			{
-				messages: [...(notes.length ? [{ role: 'system', content: contextMessage }] : []),
-					systemPrompt,
-				...messages,
-				]
-			}
-		);
-	}
-
-	return c.json(answer);
-});
-
-
-// For use with Google Sheets
-
-// 1. Extensions > Apps Script
-// 2. Create a new function to accept the event param
-// 3. Set up an "edit" trigger so that this function fires every time a cell value is edited on the sheet
-// 4. Use the docs to build a call to post the cell changed and then set the east-neighboring cell to the prompt answer
-// Apps Script reference
-// - https://developers.google.com/apps-script/guides/triggers/events
-// - https://developers.google.com/apps-script/reference/spreadsheet/range#methods
-// - https://developers.google.com/apps-script/reference/url-fetch/http-response#getcontenttext
-// 5. You can check the log of your Apps Script to see what went wrong or to see logs from the execution using `Logger.log()`
-
-app.post('/raw/completion', async (c) => {
-	const { prompt, user, pass } = await c.req.json();
-
-	if (user !== c.env.username || pass !== c.env.password) {
-		c.status(403);
-		return c.json({ error: 'Not authed!' });
-	}
-
-	// The entire conversation is stored and sent via client rather than relying on a vector DB
-	// The model still has a max input token length of 768 regardless of where the input comes from!
-	const ai = new Ai(c.env.AI);
-
-	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
-		{ prompt }
-	);
-
-	return c.text(answer.response);
-});
-
-app.post('/raw/chat', async (c) => {
-	const { messages, user, pass } = await c.req.json();
-
-	if (user !== c.env.username || pass !== c.env.password) {
-		c.status(403);
-		return c.json({ error: 'Not authed!' });
-	}
-
-	// The entire conversation is stored and sent via client rather than relying on a vector DB
-	// The model still has a max input token length of 768 regardless of where the input comes from!
-	const ai = new Ai(c.env.AI);
-
-	console.log(messages);
-
-	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
-		{ messages }
-	);
-
-	return c.text(answer.response);
-});
-
-// WhatsApp integration
-
-app.post('/chat/wa', async (c) => {
-	let error;
-	const { text, to } = await c.req.json();
-
-	if (text.length === 0) {
-		error = { error: 'No message text!' }
-	}
-
-	if (to.length === 0) {
-		error = { error: 'No recipient!' }
-	}
-
-	if (error) {
-		c.status(400);
-		return c.json(error);
-	}
-
-	console.log(c.env.API_AUTH);
-
-	const res = await fetch('https://api.nexmo.com/v1/messages', {
-		method: 'post',
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Basic ${c.env.API_AUTH}`
-		},
-		body: JSON.stringify({
-			"message_type": "text",
-			"channel": "whatsapp",
-			from: c.env.FROM_NUMBER,
-			to,
-			text,
-		})
-	});
-
-	return c.json(await res.json());
-});
 
 export default app;

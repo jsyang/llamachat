@@ -4,7 +4,7 @@ import { basicAuth } from 'hono/basic-auth';
 import { serveStatic } from 'hono/cloudflare-workers';
 import { cors } from 'hono/cors';
 
-import { getTokensForString, formatMessage, truncateMessages, chunkString } from './helpers.js';
+import { formatMessage, truncateMessages } from './helpers';
 import {LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT} from './constants';
 
 const app = new Hono();
@@ -79,14 +79,17 @@ app.post('/chat/completion', async (c) => {
 });
 
 ///////////////////////////////////////////////////
-import addRAGRoutes from './addRAGRoutes.js';
+import addRAGRoutes from './addRAGRoutes';
 addRAGRoutes(app);
 ///////////////////////////////////////////////////
-import addRAWRoutes from './addRAWRoutes.js';
+import addRAWRoutes from './addRAWRoutes';
 addRAWRoutes(app);
 ///////////////////////////////////////////////////
-import addWARoutes from './addWARoutes.js';
+import addWARoutes from './addWARoutes';
 addWARoutes(app);
+///////////////////////////////////////////////////
+import addImageGenRoutes from './addImageGenRoutes';
+addImageGenRoutes(app);
 
 
 export default app;

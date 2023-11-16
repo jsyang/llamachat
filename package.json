@@ -7,7 +7,7 @@
     "start": "wrangler dev"
   },
   "devDependencies": {
-    "@cloudflare/ai": "^1.0.15",
+    "@cloudflare/ai": "^1.0.29",
     "wrangler": "^3.0.0"
   },
   "dependencies": {

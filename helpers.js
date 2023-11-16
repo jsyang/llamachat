@@ -67,7 +67,7 @@ export function truncateMessages(messages, chopStrategy = 'middle') {
             messages.shift();
     }
     const allText = messages.map(formatMessage).join('\n');
-    return { messages, tokenCount: getTokensForString(allText) };
+    return { messages, tokenCount: allText.length };
 }
 
 export function chunkString(s, length) {

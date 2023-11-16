@@ -1,3 +1,5 @@
+import { Ai } from '@cloudflare/ai';
+
 function addRAWRoutes(app) {
 
     // For use with Google Sheets

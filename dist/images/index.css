@@ -1,0 +1,97 @@
+body {
+    font-family: sans-serif;
+}
+
+#log {
+    position: absolute;
+    top: 2em;
+    left: 0;
+    right: 0;
+    bottom: 60px;
+    padding: 1em;
+    overflow: auto;
+}
+
+#save {
+    position: fixed;
+    top: 0;
+    left: 0;
+    font-size: 2.5em;
+    background: transparent;
+    text-shadow: 2px 2px 5px gray;
+    border: 0;
+    z-index: 1;
+}
+
+#log span {
+    white-space: pre-wrap;
+}
+
+
+#log>div {
+    margin-bottom: 1em;
+}
+
+/* Button container */
+#log>div .more {
+    margin-top: 1em;
+    text-align: right;
+}
+
+body.hide-more .more {
+    display: none;
+}
+
+/* Hide all interaction while prompt is generating. */
+
+body.hide-more form {
+    display: none;
+}
+
+#log .system {
+    float: left;
+    clear: both;
+    background-color: #cc88ee;
+    border-radius: 1em;
+    padding: .5em;
+    border-bottom-left-radius: 0;
+}
+
+#log .user {
+    float: right;
+    clear: both;
+    background-color: #88ccee;
+    font-weight: bold;
+    border-radius: 1em;
+    border-bottom-right-radius: 0;
+    padding: .5em;
+}
+
+form {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 60px;
+    bottom: 0;
+    margin: 0;
+}
+
+form #user {
+    position: absolute;
+    left: 0;
+    right: 48px;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    width: calc(100% - 48px);
+    display: block;
+}
+
+form input[type=submit] {
+    position: absolute;
+    width: 48px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #88ccee;
+}

@@ -5,6 +5,7 @@ import { serveStatic } from 'hono/cloudflare-workers';
 import { cors } from 'hono/cors';
 
 import { getTokensForString, formatMessage, truncateMessages, chunkString } from './helpers.js';
+import {LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT} from './constants';
 
 const app = new Hono();
 
@@ -32,10 +33,10 @@ app.post('/chat/basic', async (c) => {
 	const { messages } = await c.req.json();
 
 	let allText = messages.map(formatMessage).join('\n');
-	let inputTokenCount = getTokensForString(allText);
+	let inputTokenCount = allText.length;
 
 	// Drop messages if over input limit
-	while (inputTokenCount >= 768) {
+	while (inputTokenCount >= LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT) {
 		const { tokenCount } = truncateMessages(messages);
 		inputTokenCount = tokenCount;
 	}
@@ -59,15 +60,16 @@ app.post('/chat/basic', async (c) => {
 	return c.json(answer);
 });
 
+
 app.post('/chat/completion', async (c) => {
 	let { prompt } = await c.req.json();
 
 	const ai = new Ai(c.env.AI);
 
-	prompt = prompt.slice(prompt.length - 768);
+	prompt = prompt.slice(prompt.length - LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT);
 
 	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-fp16',
+		'@cf/meta/llama-2-7b-chat-int8',
 		{ prompt }
 	);
 

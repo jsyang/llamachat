@@ -1,3 +1,4 @@
+import { Ai } from '@cloudflare/ai';
 import { getLongestWallOfTextFromURL } from './loader.js';
 
 function addRAGRoutes(app) {

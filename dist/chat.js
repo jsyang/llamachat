@@ -16,6 +16,9 @@ function splitLargeMessages() {
     return outgoingMessages;
 }
 
+const EVENTSTREAM_PREFIX = 'data: ';
+const EVENTSTREAM_ENDED = '[DONE]';
+
 async function submitChatMessage(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -23,26 +26,58 @@ async function submitChatMessage(e) {
     const prompt = userInputEl.value;
 
     logMsg(prompt, 'user');
-    logMsg('<i>LLM is generating the response, please wait...</i>');
+    logMsg('');
 
-    userInputEl.setAttribute('disabled', 'disabled');
+    try {
+        userInputEl.setAttribute('disabled', 'disabled');
 
-    const res = await fetch(
-        API_URL.BASIC_CHAT,
-        {
-            method: 'post',
-            'Content-Type': 'application/json',
+        const logEl = document.getElementById('log');
+
+        // todo: externalize this logic for reuse
+        const res = await fetch(API_URL.BASIC_CHAT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/event-stream'
+            },
             body: JSON.stringify({ messages: splitLargeMessages() })
+        });
+
+        const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+
+        while (true) {
+            let { value, done } = await reader.read();
+            let totalMsg = '';
+
+            for (const l of value.split('\n')) {
+                if (!l) continue; // empty lines
+                if (l.indexOf(EVENTSTREAM_PREFIX) >= 0) {
+                    const msgChunk = l.substring(EVENTSTREAM_PREFIX.length);
+
+                    if (msgChunk === EVENTSTREAM_ENDED) {
+                        done = true;
+                    } else {
+                        const { response } = JSON.parse(msgChunk);
+                        totalMsg += response;
+                    }
+                }
+            }
+
+            if (done) break;
+
+            logEl.lastChild.lastChild.innerHTML += totalMsg;
+            scrollToBottom();
         }
-    );
 
-    const { response } = await res.json();
-    userInputEl.value = '';
-    userInputEl.removeAttribute('disabled');
-    deleteLastMsg();
-    logMsg(response, 'system');
+        reader.cancel();
+        userInputEl.value = '';
+        userInputEl.removeAttribute('disabled');
 
-    userInputEl.focus();
+        userInputEl.focus();
+    } catch (e) {
+        alert(e);
+        console.trace(e);
+        userInputEl.removeAttribute('disabled');
+    }
 }
 
 function logMsg(content, role) {
@@ -50,12 +85,7 @@ function logMsg(content, role) {
 
     role = role || 'system';
 
-    let moreTextButton = '';
-    if (role === 'system') {
-        moreTextButton = '<div class="more"><button onclick="continueReply(event)">more</button></div>';
-    }
-
-    logEl.innerHTML += `<div class="${role ? role : 'system'}"><span>${content}</span>${moreTextButton}</div>`;
+    logEl.innerHTML += `<div class="${role ? role : 'system'}"><span>${content}</span></div>`;
 
     if (role) {
         messages.push({ role, content });
@@ -68,16 +98,9 @@ function scrollToBottom() {
     const logEl = document.getElementById('log');
 
     logEl.scroll({
-        top: 1e8,
+        top: 1e12,
         behavior: 'smooth'
     });
-}
-
-
-function deleteLastMsg() {
-    messages.pop();
-    const logEl = document.getElementById('log');
-    logEl.removeChild(logEl.lastChild);
 }
 
 function saveConversation() {

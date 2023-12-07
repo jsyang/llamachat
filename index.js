@@ -5,7 +5,7 @@ import { serveStatic } from 'hono/cloudflare-workers';
 import { cors } from 'hono/cors';
 
 import { formatMessage, truncateMessages } from './helpers';
-import {LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT} from './constants';
+import { LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT } from './constants';
 
 const app = new Hono();
 
@@ -41,23 +41,18 @@ app.post('/chat/basic', async (c) => {
 		inputTokenCount = tokenCount;
 	}
 
-	let answer = await ai.run(
+	const answer = await ai.run(
 		'@cf/meta/llama-2-7b-chat-fp16',
-		{ messages }
+		{ messages, stream: true, max_tokens: 2500 }
 	);
 
-	// Drop messages if LLM response is empty
-	while (answer.response.length === 0) {
-		truncateMessages(messages);
-		answer = await ai.run(
-			'@cf/meta/llama-2-7b-chat-fp16',
-			{ messages }
-		);
-	}
-
+	c.header('Content-Type', 'text/event-stream');
 	c.header('Cache-Control', 'no-cache');
 
-	return c.json(answer);
+	return c.stream(async stream => {
+		await stream.pipe(answer);
+		await stream.close();
+	});
 });
 
 

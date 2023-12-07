@@ -7,12 +7,12 @@
     "start": "wrangler dev"
   },
   "devDependencies": {
-    "@cloudflare/ai": "^1.0.29",
+    "@cloudflare/ai": "^1.0.37",
     "wrangler": "^3.0.0"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "gpt3-tokenizer": "^1.1.5",
-    "hono": "^3.7.4"
+    "hono": "^3.11.2"
   }
 }

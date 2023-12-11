@@ -57,20 +57,19 @@ app.post('/chat/basic', async (c) => {
 
 
 app.post('/chat/completion', async (c) => {
-	let { prompt } = await c.req.json();
+	let { params, model = '@cf/meta/llama-2-7b-chat-fp16' } = await c.req.json();
 
 	const ai = new Ai(c.env.AI);
 
-	prompt = prompt.slice(prompt.length - LLAMA2_CHAT_INPUT_CONTEXT_TOKEN_LIMIT);
+	const answer = await ai.run( model, params);
 
-	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-int8',
-		{ prompt }
-	);
-
+	c.header('Content-Type', 'text/event-stream');
 	c.header('Cache-Control', 'no-cache');
 
-	return c.json(answer);
+	return c.stream(async stream => {
+		await stream.pipe(answer);
+		await stream.close();
+	});
 });
 
 ///////////////////////////////////////////////////

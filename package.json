@@ -2,17 +2,13 @@
   "name": "app",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "start": "wrangler dev"
-  },
   "devDependencies": {
-    "@cloudflare/ai": "^1.0.37",
+    "@cloudflare/ai": "^1.0.39",
     "wrangler": "^3.0.0"
   },
   "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.3.0",
     "cheerio": "^1.0.0-rc.12",
-    "gpt3-tokenizer": "^1.1.5",
     "hono": "^3.11.2"
   }
 }

@@ -2,15 +2,22 @@
 # yarn lockfile v1
 
 
-"@cloudflare/ai@^1.0.37":
-  version "1.0.37"
-  resolved "https://registry.yarnpkg.com/@cloudflare/ai/-/ai-1.0.37.tgz#542c7934d30b52b43cd56c69b2e901c99d6ec93e"
-  integrity sha512-mR1Lbkr8aDks6LLhhEpXB8SValH+mDKtrxT4idxBlArPnB5fqU2Kpj961AWWW+3JHRPFRC2YPATC+/UgyL2Fxg==
+"@cloudflare/ai@^1.0.39":
+  version "1.0.39"
+  resolved "https://registry.yarnpkg.com/@cloudflare/ai/-/ai-1.0.39.tgz#d05480395783e15f2c55cde05f2fc415912564b7"
+  integrity sha512-i6GhkU3s+4w3EJYn9hwqSqOuNa21DSzRD/iYIPBfxoJ65v/652WDgEA1MRNWQNCwhLYhj22kh0eiEFWxeHaFLQ==
 
 "@cloudflare/kv-asset-handler@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@cloudflare/kv-asset-handler/-/kv-asset-handler-0.2.0.tgz#c9959bbd7a1c40bd7c674adae98aa8c8d0e5ca68"
   integrity sha512-MVbXLbTcAotOPUj0pAMhVtJ+3/kFkwJqc5qNOleOZTv6QkZZABDMS21dSrSlVswEHwrpWC03e4fWytjqKvuE2A==
+  dependencies:
+    mime "^3.0.0"
+
+"@cloudflare/kv-asset-handler@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/kv-asset-handler/-/kv-asset-handler-0.3.0.tgz#11f0af0749a400ddadcca16dcd6f4696d7036991"
+  integrity sha512-9CB/MKf/wdvbfkUdfrj+OkEwZ5b7rws0eogJ4293h+7b6KX5toPwym+VQKmILafNB9YiehqY0DlNrDcDhdWHSQ==
   dependencies:
     mime "^3.0.0"
 
@@ -184,11 +191,6 @@ anymatch@~3.1.2:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
-
-array-keyed-map@^2.1.3:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/array-keyed-map/-/array-keyed-map-2.1.3.tgz#0d5c06ed58ccba2755a4f5bfb7a935a31f395b18"
-  integrity sha512-JIUwuFakO+jHjxyp4YgSiKXSZeC0U+R1jR94bXWBcVlFRBycqXlb+kH9JHxBGcxnVuSqx5bnn0Qz9xtSeKOjiA==
 
 as-table@^1.0.36:
   version "1.0.55"
@@ -414,13 +416,6 @@ glob-to-regexp@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz#c75297087c851b9a578bd217dd59a92f59fe546e"
   integrity sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==
-
-gpt3-tokenizer@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/gpt3-tokenizer/-/gpt3-tokenizer-1.1.5.tgz#79e5f96c435daf9c41a81117411ebce3bf475e78"
-  integrity sha512-O9iCL8MqGR0Oe9wTh0YftzIbysypNQmS5a5JG3cB3M4LMYjlAVvNnf8LUzVY9MrI7tj+YLY356uHtO2lLX2HpA==
-  dependencies:
-    array-keyed-map "^2.1.3"
 
 hono@^3.11.2:
   version "3.11.2"

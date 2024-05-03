@@ -42,7 +42,7 @@ app.post('/chat/basic', async (c) => {
 	}
 
 	const answer = await ai.run(
-		'@cf/meta/llama-2-7b-chat-fp16',
+		'@cf/meta/llama-3-8b-instruct',
 		{ messages, stream: true, max_tokens: 2500 }
 	);
 
@@ -57,7 +57,7 @@ app.post('/chat/basic', async (c) => {
 
 
 app.post('/chat/completion', async (c) => {
-	let { params, model = '@cf/meta/llama-2-7b-chat-fp16' } = await c.req.json();
+	let { params, model = '@cf/meta/llama-3-8b-instruct' } = await c.req.json();
 
 	const ai = new Ai(c.env.AI);
 

@@ -79,9 +79,6 @@ addRAGRoutes(app);
 import addRAWRoutes from './addRAWRoutes';
 addRAWRoutes(app);
 ///////////////////////////////////////////////////
-import addWARoutes from './addWARoutes';
-addWARoutes(app);
-///////////////////////////////////////////////////
 import addImageGenRoutes from './addImageGenRoutes';
 addImageGenRoutes(app);
 
